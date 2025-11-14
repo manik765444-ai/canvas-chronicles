@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Canvas</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #f7f7f7, #ddd);
+        }
+        .container {
+            width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .canvas-container {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .canvas-container canvas {
+            border: none;
+            width: 100%;
+            height: 400px;
+        }
+        .tools {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .tool {
+            margin: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #f7f7f7;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .tool:hover {
+            background: #ddd;
+        }
+        .tool.active {
+            background: #007bff;
+            color: #fff;
+        }
+        .color-picker {
+            margin: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #f7f7f7;
+            cursor: pointer;
+        }
+        .color-picker input[type="color"] {
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+        .button {
+            margin: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .button:hover {
+            background: #0069d9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="tools">
+            <button class="tool active" id="pen-tool" title="Pen Tool"><i class="fas fa-pen"></i> Pen</button>
+            <button class="tool" id="eraser-tool" title="Eraser Tool"><i class="fas fa-eraser"></i> Eraser</button>
+            <button class="tool" id="clear-tool" title="Clear Canvas"><i class="fas fa-trash-alt"></i> Clear</button>
+            <div class="color-picker">
+                <input type="color" id="color-picker" value="#000">
+            </div>
+            <button class="button" id="save-button">Save</button>
+        </div>
+    </div>
+
+    <script>
+        // Get the canvas element
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+
+        // Set the canvas dimensions
+        canvas.width = 800;
+        canvas.height = 400;
+
+        // Set the default drawing color
+        let color = '#000';
+        let drawing = false;
+        let lastPos = null;
+        let tool = 'pen';
+
+        // Event listeners
+        canvas.addEventListener('mousedown', function(e) {
+            drawing = true;
+            lastPos = {
+                x: e.clientX - canvas.offsetLeft,
+                y: e.clientY - canvas.offsetTop
+            };
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (drawing) {
+                let pos = {
+                    x: e.clientX - canvas.offsetLeft,
+                    y: e.clientY - canvas.offsetTop
+                };
+                if (tool === 'pen') {
+                    drawLine(lastPos, pos, color, 3);
+                } else if (tool === 'eraser') {
+                    drawLine(lastPos, pos, '#fff', 10);
+                }
+                lastPos = pos;
+            }
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            drawing = false;
+            lastPos = null;
+        });
+
+        // Draw a line on the canvas
+        function drawLine(from, to, color, width) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+        }
+
+        // Select a tool
+        document.getElementById('pen-tool').addEventListener('click', function() {
+            tool = 'pen';
+            document.querySelector('.tool.active').classList.remove('active');
+            this.classList.add('active');
+        });
+
+        document.getElementById('eraser-tool').addEventListener('click', function() {
+            tool = 'eraser';
+            document.querySelector('.tool.active').classList.remove('active');
+            this.classList.add('active');
+        });
+
+        // Clear the canvas
+        document.getElementById('clear-tool').addEventListener('click', function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Change the drawing color
+        document.getElementById('color-picker').addEventListener('change', function() {
+            color = this.value;
+        });
+
+        // Save the canvas
+        document.getElementById('save-button').addEventListener('click', function() {
+            let dataUrl = canvas.toDataURL('image/png');
+            let a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = 'drawing.png';
+            a.click();
+        });
+    </script>
+</body>
+</html>
